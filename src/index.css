@@ -746,6 +746,15 @@ html.light-mode {
   .login-page-container {
     flex-direction: column !important;
   }
+
+  .whatsapp-mockup {
+    height: 380px !important;
+  }
+}
+
+/* Landing Page Mockup Height for Desktop */
+.whatsapp-mockup {
+  height: 520px;
 }
 
 /* Command Center Specifics */

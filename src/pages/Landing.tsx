@@ -289,11 +289,15 @@ export default function Landing() {
               <Link to="/login" className="desktop-only" style={{ color: 'var(--secondary)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>
                 Iniciar sesión
               </Link>
-              <button onClick={() => { setIsBookingOpen(true); setBookingStep(0); }} className="btn-primary nav-button" style={{
-                boxShadow: '0 0 15px rgba(255, 85, 0, 0.25)'
+              <a href={`https://wa.me/${DEMO_WHATSAPP_NUMBER}?text=Hola,%20quiero%20conocer%20m%C3%A1s%20sobre%20Robotina%20Central`} target="_blank" rel="noopener noreferrer" className="btn-primary nav-button" style={{
+                boxShadow: '0 0 15px rgba(255, 85, 0, 0.25)',
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}>
-                Agendar Demo
-              </button>
+                Hablar con Ventas
+              </a>
             </div>
           </nav>
         </div>
@@ -419,7 +423,7 @@ export default function Landing() {
               borderRadius: '30px',
               boxShadow: '0 10px 25px rgba(255, 85, 0, 0.4)'
             }}>
-              Quiero Automatizar Mi Negocio
+              Agendar Prueba de 14 Días
             </button>
             <a href="#how-it-works" className="btn-secondary" style={{ 
               textDecoration: 'none', 
@@ -453,7 +457,7 @@ export default function Landing() {
         </div>
 
         {/* MOCKUP INTERACTIVO DE WHATSAPP (MULTIPROPÓSITO: SERVICIO / CITA / PRODUCTO) */}
-        <div style={{
+        <div className="whatsapp-mockup" style={{
           backgroundColor: '#0c0d14',
           borderRadius: '24px',
           border: '1px solid rgba(255,255,255,0.08)',
@@ -461,7 +465,6 @@ export default function Landing() {
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          height: '520px',
           width: '100%',
           maxWidth: '380px',
           margin: '0 auto'
@@ -1951,22 +1954,11 @@ export default function Landing() {
               </div>
 
               <button 
-                onClick={() => {
-                  setSelectedPlan({
-                    name: 'Robotina Completo',
-                    price: currency === 'USD' ? '$49 / mes' : 'S/. 180 / mes',
-                    setup: currency === 'USD' ? '$29' : 'S/. 110',
-                    rebillUrl: 'https://pay.rebill.com/robotinacentral-sandbox/test_pl_c3618793fbcb4aaa86deba798e140388',
-                    dlocalUrl: currency === 'USD' 
-                      ? 'https://checkout.dlocalgo.com/validate/recurring/cUpwxzpIXmCSErec0FnDwLF5UfUyhqoh' 
-                      : 'https://checkout.dlocalgo.com/validate/recurring/unuYHTStzP5Ycnxfd1E4j0j8mJ2oZohH',
-                    mercadoPagoUrl: `https://wa.me/${DEMO_WHATSAPP_NUMBER}?text=Hola,%20quiero%20pagar%20el%20Plan%20Completo%20v%C3%ADa%20Mercado%20Pago.`
-                  });
-                  setIsPaymentOpen(true);
-                }}
+                onClick={() => { setIsBookingOpen(true); setBookingStep(0); }}
                 className="btn-secondary"
                 style={{
                   textAlign: 'center',
+                  textDecoration: 'none',
                   padding: '0.8rem',
                   borderRadius: '30px',
                   fontSize: '0.9rem',
@@ -1980,7 +1972,7 @@ export default function Landing() {
                   cursor: 'pointer'
                 }}
               >
-                Comenzar Ahora
+                Iniciar Prueba de 14 Días
               </button>
             </div>
 
@@ -2051,18 +2043,11 @@ export default function Landing() {
               </div>
 
               <button 
-                onClick={() => {
-                  setSelectedPlan({
-                    name: 'Robotina Multisucursal',
-                    price: currency === 'USD' ? '$99 / mes' : 'S/. 370 / mes',
-                    setup: currency === 'USD' ? '$79' : 'S/. 290',
-                    rebillUrl: 'https://pay.rebill.com/robotinacentral-sandbox/test_pl_f58398496d674bd38d37554b8175475c'
-                  });
-                  setIsPaymentOpen(true);
-                }}
+                onClick={() => { setIsBookingOpen(true); setBookingStep(0); }}
                 className="btn-primary"
                 style={{
                   textAlign: 'center',
+                  textDecoration: 'none',
                   padding: '1rem',
                   borderRadius: '30px',
                   fontSize: '1rem',
@@ -2077,7 +2062,7 @@ export default function Landing() {
                   cursor: 'pointer'
                 }}
               >
-                Elegir Plan Multisucursal
+                Iniciar Prueba de 14 Días
               </button>
             </div>
 
@@ -2293,159 +2278,41 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Formulario de Contacto */}
-            <div className="glass-card" style={{ padding: 'var(--glass-card-padding)' }}>
-              {contactSuccess ? (
-                <div style={{ textAlign: 'center', padding: '2rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'rgba(0, 255, 102, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--emerald-400)', marginBottom: '0.5rem', filter: 'drop-shadow(0 0 8px rgba(0,255,102,0.3))' }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>check_circle</span>
-                  </div>
-                  <h3 style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>¡Mensaje Enviado!</h3>
-                  <p style={{ color: 'var(--secondary)', fontSize: '0.88rem', margin: 0, lineHeight: '1.5' }}>
-                    Gracias por escribirnos. Un asesor comercial se pondrá en contacto contigo a la brevedad posible.
-                  </p>
-                  <button 
-                    onClick={() => setContactSuccess(false)}
-                    style={{
-                      marginTop: '1rem',
-                      padding: '8px 16px',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      color: '#fff',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'}
-                  >
-                    Enviar otro mensaje
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleContactSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                  <div>
-                    <label htmlFor="contact_name" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#fff', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>Nombre Completo</label>
-                    <input 
-                      id="contact_name"
-                      type="text" 
-                      placeholder="Ej. Juan Pérez"
-                      required
-                      value={contactName}
-                      onChange={(e) => setContactName(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '12px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        color: '#fff',
-                        outline: 'none',
-                        transition: 'border-color 0.3s',
-                        fontSize: '0.9rem'
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = 'var(--emerald-400)'}
-                      onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)'}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="contact_email" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#fff', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>Correo Electrónico</label>
-                    <input 
-                      id="contact_email"
-                      type="email" 
-                      placeholder="juan@empresa.com"
-                      required
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '12px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        color: '#fff',
-                        outline: 'none',
-                        transition: 'border-color 0.3s',
-                        fontSize: '0.9rem'
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = 'var(--emerald-400)'}
-                      onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)'}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="contact_message" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#fff', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>Mensaje</label>
-                    <textarea 
-                      id="contact_message"
-                      placeholder="¿En qué podemos ayudarte? Cuéntanos sobre tu negocio..."
-                      required
-                      rows={4}
-                      value={contactMessage}
-                      onChange={(e) => setContactMessage(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        borderRadius: '12px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        color: '#fff',
-                        outline: 'none',
-                        transition: 'border-color 0.3s',
-                        fontSize: '0.9rem',
-                        resize: 'none',
-                        fontFamily: 'inherit'
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = 'var(--emerald-400)'}
-                      onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)'}
-                    />
-                  </div>
-
-                  <button 
-                    type="submit" 
-                    disabled={contactLoading}
-                    style={{
-                      width: '100%',
-                      padding: '14px',
-                      borderRadius: '12px',
-                      backgroundColor: 'var(--primary)',
-                      color: '#fff',
-                      border: 'none',
-                      fontWeight: 800,
-                      cursor: contactLoading ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.3s ease',
-                      boxShadow: '0 4px 15px rgba(255, 90, 31, 0.3)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!contactLoading) {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 90, 31, 0.4)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!contactLoading) {
-                        e.currentTarget.style.transform = 'none';
-                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 90, 31, 0.3)';
-                      }
-                    }}
-                  >
-                    {contactLoading ? (
-                      <>Enviando mensaje...</>
-                    ) : (
-                      <>
-                        Enviar Mensaje
-                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>send</span>
-                      </>
-                    )}
-                  </button>
-                </form>
-              )}
+            {/* Contact CTA */}
+            <div className="glass-card" style={{ padding: '3rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '1.5rem', background: 'linear-gradient(145deg, rgba(34, 197, 94, 0.05) 0%, rgba(10, 11, 16, 0.8) 100%)', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(0, 255, 102, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--emerald-400)', filter: 'drop-shadow(0 0 15px rgba(0,255,102,0.4))' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>forum</span>
+              </div>
+              <div>
+                <h3 style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 800, margin: '0 0 0.5rem 0' }}>Habla con Robotina</h3>
+                <p style={{ color: 'var(--secondary)', fontSize: '0.95rem', margin: 0, lineHeight: '1.5', maxWidth: '300px' }}>
+                  Deja de enviar correos que nadie lee. Pruébalo tú mismo enviándole un mensaje a nuestro bot oficial.
+                </p>
+              </div>
+              <a 
+                href={`https://wa.me/${DEMO_WHATSAPP_NUMBER}?text=Hola,%20tengo%20unas%20dudas%20antes%20de%20empezar%20con%20Robotina.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+                style={{
+                  padding: '1rem 2rem',
+                  borderRadius: '30px',
+                  backgroundColor: 'var(--emerald-400)',
+                  color: '#000',
+                  border: 'none',
+                  fontWeight: 800,
+                  fontSize: '1rem',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 10px 25px rgba(34, 197, 94, 0.3)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chat</span>
+                Chatear Ahora
+              </a>
             </div>
           </div>
         </div>
