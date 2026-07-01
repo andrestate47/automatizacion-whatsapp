@@ -18,23 +18,10 @@ export default function Landing() {
   const [bookingStep, setBookingStep] = useState(0); // 0 = Questionnaire, 1 = Show Calendar / Confirm
 
 
-  // Contact Form State
-  const [contactName, setContactName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactMessage, setContactMessage] = useState('');
-  const [contactSuccess, setContactSuccess] = useState(false);
-  const [contactLoading, setContactLoading] = useState(false);
   const [showLegalDropdown, setShowLegalDropdown] = useState(false);
   const [currency, setCurrency] = useState<'USD' | 'PEN'>('USD');
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<{
-    name: string;
-    price: string;
-    setup: string;
-    rebillUrl: string;
-    dlocalUrl?: string;
-    mercadoPagoUrl?: string;
-  } | null>(null);
+
 
   useEffect(() => {
     if (isBookingOpen || isPaymentOpen) {
@@ -119,38 +106,7 @@ export default function Landing() {
     setBookingGoal('');
   };
 
-  const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!contactName || !contactEmail || !contactMessage) {
-      alert('Por favor completa todos los campos.');
-      return;
-    }
-    setContactLoading(true);
 
-    try {
-      // Guardar en localStorage para persistir localmente y dar confirmación 100% real
-      const savedMessages = JSON.parse(localStorage.getItem('contact_messages') || '[]');
-      savedMessages.push({
-        name: contactName,
-        email: contactEmail,
-        message: contactMessage,
-        date: new Date().toISOString()
-      });
-      localStorage.setItem('contact_messages', JSON.stringify(savedMessages));
-
-      // Delay de animación para simular conexión de red premium
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      setContactSuccess(true);
-      setContactName('');
-      setContactEmail('');
-      setContactMessage('');
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setContactLoading(false);
-    }
-  };
 
   // Lazy-mount globe only when its section enters the viewport
   useEffect(() => {
