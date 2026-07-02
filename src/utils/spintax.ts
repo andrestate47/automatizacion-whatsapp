@@ -5,7 +5,7 @@
 export function processSpintax(text: string): string {
   if (!text) return '';
   const regex = /\{([^{}]+)\}/g;
-  return text.replace(regex, (match, contents) => {
+  return text.replace(regex, (_match, contents) => {
     const options = contents.split('|');
     const randomIndex = Math.floor(Math.random() * options.length);
     return options[randomIndex];
