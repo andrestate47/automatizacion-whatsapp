@@ -2,7 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
-export default function Topbar() {
+interface TopbarProps {
+  onToggleSidebar?: () => void;
+}
+
+export default function Topbar({ onToggleSidebar }: TopbarProps = {}) {
   const navigate = useNavigate();
   const [pendingOrders, setPendingOrders] = useState<any[]>([]);
   const [unreadChats, setUnreadChats] = useState<any[]>([]);
@@ -187,9 +191,17 @@ export default function Topbar() {
   };
 
   return (
-    <header className="topbar" style={{ paddingLeft: '1.5rem' }}>
-      <div className="flex items-center" style={{ flex: '1', position: 'relative', marginRight: '1.5rem' }}>
-        <div style={{ position: 'relative', width: '100%' }}>
+    <header className="topbar">
+      <div className="flex items-center" style={{ flex: '1', position: 'relative', marginRight: '1.5rem', gap: '0.5rem' }}>
+        <button 
+          className="mobile-menu-btn icon-btn" 
+          onClick={onToggleSidebar}
+          style={{ color: 'var(--on-surface)', display: 'none', padding: '0.5rem' }}
+          title="Menú"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '1.5rem' }}>menu</span>
+        </button>
+        <div className="desktop-search" style={{ position: 'relative', width: '100%', maxWidth: '500px' }}>
           <span className="material-symbols-outlined" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', fontSize: '1.2rem', pointerEvents: 'none' }}>search</span>
           <input 
             type="text" 

@@ -208,7 +208,7 @@
             "parameters": [
               {
                 "name": "Authorization",
-                "value": "Bearer EAAdRNS7bknMBRomg1KXdRhrOfMg8i3QA1Y71Ocv8ZCHIiN9RujAorQGZAZB6T5TCcNg2bQx99qrLMlQWIlKInAimhZB7OQQOy6ngiQJBZA3ZBbZBcRchn66K4GRkDnnhGkazlwC3uPSqt0DQk6LkmrVJvmwvr3elV2XUAjhBWLkcwGLEfNkRi0MRBL7YQBOolFTugZDZD"
+                "value": "Bearer EAAdRNS7bknMBR8T7JBwaFkRp8LRfyZCubiRROG272VcuEHwUI0MaYy4ZBn80CeeABo0Mm7hr3Q2V418DD2VFizCFWx1yQj8ZAFjTioqEKLWVedlUgLu0AGhpFrSlKHRWkRym8kmpVhZAqUZAkReptYWoAf7lmnpae4FZBv5NaKnHLBlNi3RIvS9WCUS2yNK2fCzQZDZD"
               },
               {
                 "name": "Content-Type",
@@ -413,7 +413,7 @@
       },
       {
         "parameters": {
-          "url": "https://vijzjcpkypsmkhywndus.supabase.co/rest/v1/whatsapp_chats?phone=eq.{{ $json.from }}&select=is_bot_active",
+          "url": "https://vijzjcpkypsmkhywndus.supabase.co/rest/v1/whatsapp_chats?phone_number=eq.{{ $json.from }}&select=is_bot_active",
           "sendHeaders": true,
           "headerParameters": {
             "parameters": [
@@ -1131,7 +1131,7 @@
             "parameters": [
               {
                 "name": "Authorization",
-                "value": "Bearer EAAdRNS7bknMBRZAPLql3WC88kOZAoNZB96d5t2DdoOTAe040ZCPut8R3ZBWTHdcqAbi7aapNzZCcLzUXccJ2lZCUbu3IBtvsk0P292mzWmpnG72KgmDtQvqyU5dLfLk6e5WxKvDAL63DLwbICB8ijDq109MJkRZCVWfzJp1rPs8va1fZC2MyaOKsguJCZAymis4buKZC6li0OGooTZB0lUnGybcMt2HzQJ4Did7XTYroBR3erwxlj4ZByo7AR"
+                "value": "Bearer EAAdRNS7bknMBR8T7JBwaFkRp8LRfyZCubiRROG272VcuEHwUI0MaYy4ZBn80CeeABo0Mm7hr3Q2V418DD2VFizCFWx1yQj8ZAFjTioqEKLWVedlUgLu0AGhpFrSlKHRWkRym8kmpVhZAqUZAkReptYWoAf7lmnpae4FZBv5NaKnHLBlNi3RIvS9WCUS2yNK2fCzQZDZD"
               },
               {
                 "name": "Content-Type",
@@ -1333,7 +1333,7 @@
       },
       {
         "parameters": {
-          "url": "https://vijzjcpkypsmkhywndus.supabase.co/rest/v1/whatsapp_chats?phone=eq.{{ $json.from }}&select=is_bot_active",
+          "url": "https://vijzjcpkypsmkhywndus.supabase.co/rest/v1/whatsapp_chats?phone_number=eq.{{ $json.from }}&select=is_bot_active",
           "sendHeaders": true,
           "headerParameters": {
             "parameters": [
@@ -2084,7 +2084,7 @@
             "parameters": [
               {
                 "name": "Authorization",
-                "value": "Bearer EAAdRNS7bknMBRZAPLql3WC88kOZAoNZB96d5t2DdoOTAe040ZCPut8R3ZBWTHdcqAbi7aapNzZCcLzUXccJ2lZCUbu3IBtvsk0P292mzWmpnG72KgmDtQvqyU5dLfLk6e5WxKvDAL63DLwbICB8ijDq109MJkRZCVWfzJp1rPs8va1fZC2MyaOKsguJCZAymis4buKZC6li0OGooTZB0lUnGybcMt2HzQJ4Did7XTYroBR3erwxlj4ZByo7AR"
+                "value": "Bearer EAAdRNS7bknMBR8T7JBwaFkRp8LRfyZCubiRROG272VcuEHwUI0MaYy4ZBn80CeeABo0Mm7hr3Q2V418DD2VFizCFWx1yQj8ZAFjTioqEKLWVedlUgLu0AGhpFrSlKHRWkRym8kmpVhZAqUZAkReptYWoAf7lmnpae4FZBv5NaKnHLBlNi3RIvS9WCUS2yNK2fCzQZDZD"
               },
               {
                 "name": "Content-Type",
@@ -2286,7 +2286,7 @@
       },
       {
         "parameters": {
-          "url": "https://vijzjcpkypsmkhywndus.supabase.co/rest/v1/whatsapp_chats?phone=eq.{{ $json.from }}&select=is_bot_active",
+          "url": "https://vijzjcpkypsmkhywndus.supabase.co/rest/v1/whatsapp_chats?phone_number=eq.{{ $json.from }}&select=is_bot_active",
           "sendHeaders": true,
           "headerParameters": {
             "parameters": [
@@ -3242,7 +3242,7 @@
       },
       {
         "parameters": {
-          "url": "https://vijzjcpkypsmkhywndus.supabase.co/rest/v1/whatsapp_chats?phone=eq.{{ $json.from }}&select=is_bot_active",
+          "url": "https://vijzjcpkypsmkhywndus.supabase.co/rest/v1/whatsapp_chats?phone_number=eq.{{ $json.from }}&select=is_bot_active",
           "sendHeaders": true,
           "headerParameters": {
             "parameters": [

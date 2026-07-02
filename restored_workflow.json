@@ -400,7 +400,7 @@
     },
     {
       "parameters": {
-        "url": "https://vijzjcpkypsmkhywndus.supabase.co/rest/v1/whatsapp_chats?phone=eq.{{ $json.from }}&select=is_bot_active",
+        "url": "https://vijzjcpkypsmkhywndus.supabase.co/rest/v1/whatsapp_chats?phone_number=eq.{{ $json.from }}&select=is_bot_active",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [

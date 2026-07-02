@@ -242,7 +242,7 @@ export default function Catalog() {
   if (loading && menuItems.length === 0) return <div className="p-8 text-center text-secondary">Cargando Catálogo Maestro...</div>;
 
   return (
-    <div style={{ padding: '0 2rem 2rem 2rem' }}>
+    <div className="p-8">
       {/* Header Premium */}
       <div className="flex justify-between items-end mb-8" style={{ marginTop: 0 }}>
         <div>
@@ -283,9 +283,9 @@ export default function Catalog() {
       </div>
 
       {/* METRICS GRID OPERATIVO (Enfoque Trabajador) */}
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
+      <div className="metrics-grid mb-6">
         {/* 1. Estado del Catálogo (Activos / Total) */}
-        <div className="card" style={{ flex: '0 0 200px', padding: '1.25rem' }}>
+        <div className="card" style={{ padding: '1.25rem' }}>
           <div className="flex justify-between items-start mb-2">
             <p className="label-sm">Items Activos</p>
             <span className="material-symbols-outlined" style={{ color: 'var(--primary)' }}>inventory_2</span>
@@ -297,7 +297,7 @@ export default function Catalog() {
         </div>
 
         {/* 2. Reservas IA (Reemplaza a Agotados) */}
-        <div className="card" style={{ flex: '0 0 200px', padding: '1.25rem' }}>
+        <div className="card" style={{ padding: '1.25rem' }}>
           <div className="flex justify-between items-start mb-2">
             <p className="label-sm">Reservas Activas</p>
             <span className="material-symbols-outlined" style={{ color: 'var(--tertiary)' }}>event_seat</span>
@@ -311,7 +311,7 @@ export default function Catalog() {
         </div>
 
         {/* 3. Salud del Bot (Sin Keywords) */}
-        <div className="card" style={{ flex: '0 0 200px', padding: '1.25rem' }}>
+        <div className="card" style={{ padding: '1.25rem' }}>
           <div className="flex justify-between items-start mb-2">
             <p className="label-sm">Alerta de Config. (IA)</p>
             <span className="material-symbols-outlined" style={{ color: 'var(--tertiary)' }}>warning</span>
@@ -325,7 +325,7 @@ export default function Catalog() {
         </div>
 
         {/* 4. TARJETA DE TOP RENDIMIENTO CON IMAGEN AJUSTADA */}
-        <div className="card" style={{ flex: '0 0 200px', padding: '1.25rem', border: '1px solid var(--primary-dim)' }}>
+        <div className="card" style={{ padding: '1.25rem', border: '1px solid var(--primary-dim)' }}>
           <div className="flex justify-between items-start mb-2">
             <p className="label-sm" style={{ color: 'var(--primary)' }}>Item Estrella</p>
             <span className="material-symbols-outlined" style={{ color: 'var(--primary)' }}>trending_up</span>
@@ -354,7 +354,7 @@ export default function Catalog() {
                   </button>
                ))}
             </div>
-            <div style={{ position: 'relative', width: '280px' }}>
+            <div style={{ position: 'relative', width: '100%', maxWidth: '280px' }}>
                <input type="text" placeholder="Buscar por nombre o keyword..." className="input-base" style={{ width: '100%', borderRadius: '8px', paddingLeft: '2.5rem', height: '40px', backgroundColor: 'var(--surface-bright)' }} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                <span className="material-symbols-outlined absolute" style={{ left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', fontSize: '1.2rem' }}>search</span>
             </div>
@@ -362,7 +362,7 @@ export default function Catalog() {
       </div>
 
       {/* CATÁLOGO DE PRODUCTOS (PRO) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
          {filteredMenu.map(item => {
             const hasDiscount = item.cost > 0 && item.cost < item.rawPrice;
             const discount = hasDiscount ? Math.round(((item.rawPrice - item.cost) / item.rawPrice) * 100) : 0;

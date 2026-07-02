@@ -612,6 +612,15 @@ html.light-mode {
 
 /* RESPONSIVE DESIGN */
 
+/* Hide scrollbar for native mobile feel */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Utility visibility classes */
 .mobile-only { display: none; }
 .desktop-only { display: block; }
@@ -701,7 +710,7 @@ html.light-mode {
   }
 
   .metrics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .dashboard-grid-main {
@@ -733,14 +742,34 @@ html.light-mode {
     grid-template-columns: 1fr !important;
   }
 
+  .booking-card-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    padding: 1rem !important;
+  }
+
   /* WhatsApp & Chat on mobile */
   .chat-layout {
     flex-direction: column !important;
   }
 
-  .chat-sidebar {
+  .chat-sidebar-wrapper {
     width: 100% !important;
-    height: 300px !important;
+    min-width: 100% !important;
+    height: 100% !important;
+  }
+
+  .chat-main-window {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .chat-sidebar-wrapper.chat-active {
+    display: none !important;
+  }
+
+  .chat-main-window.chat-inactive {
+    display: none !important;
   }
 
   .login-page-container {
@@ -1314,3 +1343,27 @@ html.light-mode #messages-container {
   /* Ensure grid layout adapts to print page width */
   main { margin: 0 !important; padding: 0 !important; width: 100% !important; }
 }
+
+.booking-card-grid {
+  display: grid;
+  grid-template-columns: 120px 2fr 1.5fr 1fr 1fr;
+  padding: 1.25rem 2rem;
+  gap: 1.5rem;
+}
+@media (max-width: 768px) {
+  .booking-card-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    padding: 1rem !important;
+  }
+}
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
+}
+@media (max-width: 768px) {
+  .settings-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+

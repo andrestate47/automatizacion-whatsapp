@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function Settings() {
   const [config, setConfig] = useState({
@@ -22,6 +23,115 @@ export default function Settings() {
   const [savedStatus, setSavedStatus] = useState(false);
   const [tenantPlan, setTenantPlan] = useState('starter');
   const [tenantIsActive, setTenantIsActive] = useState(true);
+
+  // Estados para Conexión WhatsApp (Evolution API)
+  const [qrValue, setQrValue] = useState('');
+  const [isGeneratingQR, setIsGeneratingQR] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
+  const [evoUrl, setEvoUrl] = useState(localStorage.getItem('evoUrl') || '');
+  const [evoKey, setEvoKey] = useState(localStorage.getItem('evoKey') || '');
+  const [evoInstance, setEvoInstance] = useState(localStorage.getItem('evoInstance') || 'robotina-ventas');
+  const [metaPhoneId, setMetaPhoneId] = useState('');
+
+  const handleGenerateQR = async () => {
+    if (!evoUrl || !evoKey || !evoInstance) {
+      alert("Por favor, ingresa la URL, API Key y nombre de instancia de Evolution API.");
+      return;
+    }
+
+    if (!metaPhoneId) {
+      alert("Error crítico: No se encontró el ID de WhatsApp Meta de tu negocio en la base de datos. Asegúrate de tener guardada la configuración principal antes de conectar el número secundario.");
+      return;
+    }
+
+    localStorage.setItem('evoUrl', evoUrl);
+    localStorage.setItem('evoKey', evoKey);
+    localStorage.setItem('evoInstance', evoInstance);
+
+    setIsGeneratingQR(true);
+    setConnectionStatus('connecting');
+
+    // Clean inputs
+    const cleanUrl = evoUrl.trim().endsWith('/') ? evoUrl.trim().slice(0, -1) : evoUrl.trim();
+    const cleanInstance = evoInstance.trim();
+    const cleanKey = evoKey.trim();
+
+    try {
+      // 1. Intentar crear la instancia
+      const createRes = await fetch(`${cleanUrl}/instance/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': cleanKey
+        },
+        body: JSON.stringify({
+          instanceName: cleanInstance,
+          qrcode: true,
+          integration: "WHATSAPP-BAILEYS",
+          webhook_wa_business: `https://n8n-whatsappa-central.robotina-ia.com/webhook/whatsapp-webhook?meta_id=${metaPhoneId}`,
+          webhook: {
+            url: `https://n8n-whatsappa-central.robotina-ia.com/webhook/whatsapp-webhook?meta_id=${metaPhoneId}`,
+            byEvents: false,
+            base64: false,
+            events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "CALL"]
+          }
+        })
+      });
+
+      let base64Qr = '';
+
+      if (createRes.ok) {
+        const createData = await createRes.json();
+        base64Qr = createData?.qrcode?.base64 || createData?.base64 || '';
+      } else {
+        const errData = await createRes.json().catch(() => ({}));
+        throw new Error(`Create Error ${createRes.status}: ${JSON.stringify(errData)}`);
+      }
+      
+      // 2. Si falló (probablemente porque ya existe) o no devolvió QR, pedir el de conexión repetidamente
+      if (!base64Qr) {
+        let retries = 5;
+        while (retries > 0 && !base64Qr) {
+          const connectRes = await fetch(`${cleanUrl}/instance/connect/${cleanInstance}`, {
+            method: 'GET',
+            headers: {
+              'apikey': cleanKey
+            }
+          });
+          
+          if (connectRes.ok) {
+            const connectData = await connectRes.json();
+            base64Qr = connectData?.base64 || connectData?.qrcode?.base64 || '';
+            if (base64Qr) break;
+          }
+          
+          // Esperar 2 segundos antes de reintentar porque Baileys demora en generar el QR
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          retries--;
+        }
+      }
+
+      if (base64Qr) {
+        // Evolution suele devolver data:image/png;base64,... si viene limpio lo mostramos directo
+        // QRCodeSVG no soporta data URI directamente en la prop 'value' si esperamos texto, 
+        // pero dado que es una cadena base64, es mejor parsearlo, 
+        // PERO wait, QRCodeSVG espera el STRING original del código para renderizar el SVG, no la imagen!
+        // Evolution API devuelve el string original en la propiedad `qrcode` a veces, o el `base64`.
+        // Si Evolution API devuelve la imagen base64, debemos mostrarla con <img src={base64Qr} />
+        setQrValue(base64Qr);
+      } else {
+        alert("Instancia conectada o no se pudo generar el QR. Si ya está conectada, simula el escaneo.");
+        setConnectionStatus('connected');
+      }
+
+    } catch (err: any) {
+      console.error(err);
+      alert("Error al conectar con Evolution API: " + err.message);
+      setConnectionStatus('disconnected');
+    } finally {
+      setIsGeneratingQR(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchConfig() {
@@ -71,6 +181,9 @@ export default function Settings() {
           autoUpsell: data.auto_upsell || true,
           currency: data.currency || 'USD'
         });
+        if (data.business_phone_number_id) {
+          setMetaPhoneId(data.business_phone_number_id);
+        }
       } else if (!data && tenantPrompt) {
         // Fallback si no hay business_config
         setConfig(prev => ({ ...prev, botSystemContext: tenantPrompt }));
@@ -155,7 +268,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 340px)', gap: '1.25rem' }}>
+      <div className="settings-grid" style={{ gap: '1.25rem' }}>
         
         {/* Formulario Principal */}
         <div className="card" style={{ padding: '1.25rem', background: 'linear-gradient(145deg, var(--surface-bright), var(--surface-container-low))' }}>
@@ -166,12 +279,12 @@ export default function Settings() {
                 <h3 className="title-md" style={{ borderBottom: '1px solid var(--surface-container-highest)', paddingBottom: '0.35rem', marginBottom: '0.5rem', color: 'var(--on-surface)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
                   <span className="material-symbols-outlined">business</span> Perfil Corporativo
                 </h3>
-                 <div className="flex gap-3 mb-2">
-                   <div style={{ flex: 1.5 }}>
+                 <div className="flex gap-3 mb-2" style={{ flexWrap: 'wrap' }}>
+                   <div style={{ flex: '1 1 200px' }}>
                      <label className="label-sm" style={{ display: 'block', marginBottom: '0.25rem' }}>Nombre del Negocio</label>
                      <input required type="text" className="input-base" style={{ width: '100%' }} value={config.businessName} onChange={e => setConfig({...config, businessName: e.target.value})} />
                    </div>
-                   <div style={{ flex: 0.8 }}>
+                   <div style={{ flex: '1 1 150px' }}>
                      <label className="label-sm" style={{ display: 'block', marginBottom: '0.25rem' }}>Moneda Base</label>
                      <select className="input-base" style={{ width: '100%' }} value={config.currency} onChange={e => setConfig({...config, currency: e.target.value})}>
                        <option value="USD">Dólares (USD)</option>
@@ -179,7 +292,7 @@ export default function Settings() {
                        <option value="ARS">Pesos Argentinos (ARS)</option>
                      </select>
                    </div>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: '1 1 200px' }}>
                     <label className="label-sm" style={{ display: 'block', marginBottom: '0.25rem' }}>WhatsApp Business</label>
                     <input 
                       readOnly 
@@ -199,16 +312,16 @@ export default function Settings() {
                 </div>
 
                 {/* NUEVO: Horarios de Operación */}
-                <div className="flex gap-3 mt-3 p-2.5 rounded-xl" style={{ backgroundColor: 'var(--surface-container-low)', border: '1px solid var(--surface-container-highest)' }}>
-                   <div style={{ flex: 1 }}>
+                <div className="flex gap-3 mt-3 p-2.5 rounded-xl" style={{ backgroundColor: 'var(--surface-container-low)', border: '1px solid var(--surface-container-highest)', flexWrap: 'wrap' }}>
+                   <div style={{ flex: '1 1 100px' }}>
                      <label className="label-sm" style={{ display: 'block', marginBottom: '0.25rem' }}>Apertura</label>
                      <input type="time" className="input-base" style={{ width: '100%' }} value={config.openingTime} onChange={e => setConfig({...config, openingTime: e.target.value})} />
                    </div>
-                   <div style={{ flex: 1 }}>
+                   <div style={{ flex: '1 1 100px' }}>
                      <label className="label-sm" style={{ display: 'block', marginBottom: '0.25rem' }}>Cierre</label>
                      <input type="time" className="input-base" style={{ width: '100%' }} value={config.closingTime} onChange={e => setConfig({...config, closingTime: e.target.value})} />
                    </div>
-                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                   <div style={{ flex: '1 1 100px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                      <label className="label-sm" style={{ marginBottom: '0.25rem' }}>Auto-Cierre</label>
                      <div style={{ width: '36px', height: '20px', borderRadius: '10px', backgroundColor: config.autoClose ? 'var(--emerald-400)' : 'var(--surface-container-highest)', display: 'flex', alignItems: 'center', padding: '2px', cursor: 'pointer', justifyContent: config.autoClose ? 'flex-end' : 'flex-start' }} onClick={() => setConfig({...config, autoClose: !config.autoClose})}>
                         <div style={{ width: '16px', height: '16px', backgroundColor: 'var(--surface-bright)', borderRadius: '50%', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}></div>
@@ -223,12 +336,12 @@ export default function Settings() {
                   <span className="material-symbols-outlined">psychology</span> Configuración de la IA (Cerebro)
                 </h3>
                 
-                <div className="flex gap-3 mb-2">
-                   <div style={{ flex: 1 }}>
+                <div className="flex gap-3 mb-2" style={{ flexWrap: 'wrap' }}>
+                   <div style={{ flex: '1 1 200px' }}>
                      <label className="label-sm" style={{ display: 'block', marginBottom: '0.25rem' }}>Identidad del Bot</label>
                      <input className="input-base" style={{ width: '100%' }} placeholder="Ej: Recepcionista Dental" value={config.botIdentity} onChange={e => setConfig({...config, botIdentity: e.target.value})} />
                    </div>
-                   <div style={{ flex: 1 }}>
+                   <div style={{ flex: '1 1 200px' }}>
                      <label className="label-sm" style={{ display: 'block', marginBottom: '0.25rem' }}>Tono de Voz</label>
                      <select className="input-base" style={{ width: '100%' }} value={config.botTone} onChange={e => setConfig({...config, botTone: e.target.value})}>
                        <option>Profesional y Atento</option>
@@ -276,6 +389,86 @@ export default function Settings() {
                </div>
              </div>
            </div>
+
+           {/* NUEVO: Tarjeta de Conexión de WhatsApp Evolution API */}
+           <div className="card" style={{ border: connectionStatus === 'connected' ? '1px solid rgba(52, 211, 153, 0.2)' : '1px solid var(--outline-variant)', padding: '0.875rem 1rem' }}>
+             <h4 style={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', fontSize: '0.85rem' }}>
+               <span className="material-symbols-outlined" style={{ color: connectionStatus === 'connected' ? 'var(--emerald-400)' : 'var(--primary)' }}>qr_code_scanner</span> 
+               VINCULACIÓN WHATSAPP
+             </h4>
+             
+              {connectionStatus === 'disconnected' && !qrValue && (
+                <div style={{ textAlign: 'left' }}>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '1rem', lineHeight: 1.4 }}>
+                    Conecta tu número secundario a tu propia API para la campaña masiva.
+                  </p>
+                  
+                  <div style={{ marginBottom: '0.75rem' }}>
+                     <label className="label-sm" style={{ display: 'block', marginBottom: '0.25rem' }}>URL Evolution API</label>
+                     <input type="text" className="input-base" style={{ width: '100%' }} placeholder="Ej: https://mi-evolution.com" value={evoUrl} onChange={e => setEvoUrl(e.target.value)} />
+                  </div>
+                  <div style={{ marginBottom: '0.75rem' }}>
+                     <label className="label-sm" style={{ display: 'block', marginBottom: '0.25rem' }}>Global API Key</label>
+                     <input type="password" className="input-base" style={{ width: '100%' }} placeholder="Tu llave secreta" value={evoKey} onChange={e => setEvoKey(e.target.value)} />
+                  </div>
+                  <div style={{ marginBottom: '1rem' }}>
+                     <label className="label-sm" style={{ display: 'block', marginBottom: '0.25rem' }}>Nombre de la Instancia</label>
+                     <input type="text" className="input-base" style={{ width: '100%' }} placeholder="Ej: robotina-ventas" value={evoInstance} onChange={e => setEvoInstance(e.target.value)} />
+                  </div>
+
+                  <button 
+                    onClick={handleGenerateQR}
+                    className="btn-primary" 
+                    style={{ width: '100%', fontSize: '0.75rem', padding: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
+                    disabled={isGeneratingQR}
+                  >
+                    {isGeneratingQR ? (
+                      <><div className="dot-typing" style={{ transform: 'scale(0.5)' }}></div> Generando QR...</>
+                    ) : (
+                      <><span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>sync</span> Conectar API</>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {connectionStatus === 'connecting' && qrValue && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ backgroundColor: '#ffffff', padding: '0.5rem', borderRadius: '8px', marginBottom: '0.5rem' }}>
+                    {qrValue.startsWith('data:image') ? (
+                       <img src={qrValue} alt="QR Code" width={180} height={180} />
+                    ) : (
+                       <QRCodeSVG value={qrValue} size={150} level={"H"} includeMargin={false} />
+                    )}
+                  </div>
+                  <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '0.5rem' }}>
+                    Abre WhatsApp en tu móvil {'>'} Dispositivos Vinculados {'>'} Vincular Dispositivo.
+                  </p>
+                  <button 
+                    onClick={() => { setConnectionStatus('connected'); setQrValue(''); }}
+                    className="btn-secondary" 
+                    style={{ width: '100%', fontSize: '0.7rem', padding: '0.4rem', borderColor: 'var(--emerald-400)', color: 'var(--emerald-400)' }}
+                  >
+                    Marcar como Conectado
+                  </button>
+                </div>
+              )}
+
+              {connectionStatus === 'connected' && (
+                <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(52, 211, 153, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.5rem' }}>
+                    <span className="material-symbols-outlined" style={{ color: 'var(--emerald-400)', fontSize: '1.5rem' }}>check_circle</span>
+                  </div>
+                  <h5 style={{ color: 'var(--emerald-400)', fontWeight: 800, marginBottom: '0.25rem' }}>CONECTADO</h5>
+                  <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Instancia: {evoInstance}</p>
+                  <button 
+                    onClick={() => setConnectionStatus('disconnected')}
+                    style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.7rem', fontWeight: 600, marginTop: '0.5rem', cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    Desconectar
+                  </button>
+                </div>
+              )}
+            </div>
 
            <div className="card" style={{ background: 'linear-gradient(135deg, var(--surface-container-low), var(--surface-container-high))', padding: '0.875rem 1rem' }}>
               <h4 style={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', fontSize: '0.85rem' }}>

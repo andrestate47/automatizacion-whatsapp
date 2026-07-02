@@ -192,16 +192,12 @@ export default function Bookings() {
   };
 
   const renderBookingCard = (b: any) => (
-    <div key={b.id} className="card" style={{ 
-      display: 'grid', 
-      gridTemplateColumns: '120px 2fr 1.5fr 1fr 1fr', 
+    <div key={b.id} className="card booking-card-grid" style={{ 
       alignItems: 'center',
-      gap: '1.5rem',
-      padding: '1.25rem 2rem',
       borderLeft: b.status === 'Confirmado' ? '4px solid var(--emerald-400)' : (b.status === 'Pendiente' ? '4px solid var(--tertiary)' : '1px solid var(--card-border)'),
       marginBottom: '1rem'
     }}>
-      <div>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
         <p style={{ fontSize: '1.25rem', fontWeight: 900, margin: 0 }}>{b.time}</p>
         <p style={{ fontSize: '0.7rem', color: 'var(--secondary)', textTransform: 'capitalize', margin: 0 }}>{b.date}</p>
       </div>
@@ -307,16 +303,16 @@ export default function Bookings() {
       </div>
 
       {/* View Toggle & Filters */}
-      <div className="flex justify-between items-center mb-2" style={{ borderBottom: '1px solid var(--surface-container-highest)', paddingBottom: '0.5rem' }}>
-        <div className="flex gap-4">
+      <div className="flex justify-between items-center mb-4 gap-4" style={{ flexWrap: 'wrap', borderBottom: '1px solid var(--surface-container-highest)', paddingBottom: '0.5rem' }}>
+        <div className="flex gap-2" style={{ flexWrap: 'wrap' }}>
           {viewMode === 'list' && ['Próximas', 'Pendientes', 'Completadas', 'Historial'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               style={{
-                padding: '0.5rem 1rem',
+                padding: '0.4rem 0.8rem',
                 borderRadius: '8px',
-                fontSize: '0.875rem',
+                fontSize: '0.75rem',
                 fontWeight: 700,
                 color: activeTab === tab ? 'var(--primary)' : 'var(--secondary)',
                 backgroundColor: activeTab === tab ? 'rgba(255, 90, 31, 0.1)' : 'transparent',
@@ -337,16 +333,16 @@ export default function Bookings() {
           )}
         </div>
 
-        <div style={{ display: 'flex', backgroundColor: 'var(--surface-container)', borderRadius: '8px', padding: '4px' }}>
+        <div style={{ display: 'flex', backgroundColor: 'var(--surface-container)', borderRadius: '8px', padding: '4px', flexWrap: 'wrap' }}>
           <button 
             onClick={() => setViewMode('list')}
-            style={{ padding: '6px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: viewMode === 'list' ? 'var(--surface-container-high)' : 'transparent', color: viewMode === 'list' ? 'var(--on-surface)' : 'var(--secondary)', transition: 'all 0.2s' }}
+            style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: viewMode === 'list' ? 'var(--surface-container-high)' : 'transparent', color: viewMode === 'list' ? 'var(--on-surface)' : 'var(--secondary)', transition: 'all 0.2s' }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>list</span> Lista
           </button>
           <button 
             onClick={() => setViewMode('calendar')}
-            style={{ padding: '6px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: viewMode === 'calendar' ? 'var(--surface-container-high)' : 'transparent', color: viewMode === 'calendar' ? 'var(--on-surface)' : 'var(--secondary)', transition: 'all 0.2s' }}
+            style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: viewMode === 'calendar' ? 'var(--surface-container-high)' : 'transparent', color: viewMode === 'calendar' ? 'var(--on-surface)' : 'var(--secondary)', transition: 'all 0.2s' }}
           >
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>calendar_month</span> Calendario
           </button>
@@ -367,26 +363,37 @@ export default function Bookings() {
         </div>
       ) : (
         /* CALENDAR VIEW */
-        <div className="card" style={{ padding: '0.75rem 1.25rem', borderRadius: '24px', backgroundColor: 'var(--surface-container-low)', border: '1px solid var(--surface-container-highest)', boxShadow: 'var(--shadow-lg)' }}>
+        /* CALENDAR VIEW */
+        <div className="card" style={{ padding: '0.75rem 0.5rem', borderRadius: '16px', backgroundColor: 'var(--surface-container-low)', border: '1px solid var(--surface-container-highest)', boxShadow: 'var(--shadow-lg)' }}>
+          <div style={{ width: '100%' }}>
           {/* Days of Week */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem', textAlign: 'center', marginBottom: '0.5rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--surface-container-highest)' }}>
-            {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map((d, i) => (
-              <div key={d} style={{ 
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', textAlign: 'center', marginBottom: '0.5rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--surface-container-highest)' }}>
+            {[
+              { full: 'Lunes', short: 'L' },
+              { full: 'Martes', short: 'M' },
+              { full: 'Miércoles', short: 'X' },
+              { full: 'Jueves', short: 'J' },
+              { full: 'Viernes', short: 'V' },
+              { full: 'Sábado', short: 'S' },
+              { full: 'Domingo', short: 'D' }
+            ].map((d, i) => (
+              <div key={d.full} style={{ 
                 fontSize: '0.75rem', 
                 fontWeight: 800, 
                 color: 'var(--secondary)', 
                 textTransform: 'uppercase', 
-                letterSpacing: '0.5px',
-                borderRight: i < 6 ? '1px solid var(--outline-variant)' : 'none'
+                borderRight: i < 6 ? '1px solid var(--outline-variant)' : 'none',
+                padding: '0 2px'
               }}>
-                {d}
+                <span className="desktop-only">{d.full}</span>
+                <span className="mobile-only">{d.short}</span>
               </div>
             ))}
           </div>
           
           {/* Calendar Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.5rem', gridAutoRows: '80px' }}>
-            {blanks.map(b => <div key={`blank-${b}`} style={{ backgroundColor: 'transparent', borderRadius: '12px' }} />)}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', gridAutoRows: '70px' }}>
+            {blanks.map(b => <div key={`blank-${b}`} style={{ backgroundColor: 'transparent' }} />)}
             
             {days.map(day => {
               const dayBookings = getBookingsForDay(day);
@@ -433,8 +440,8 @@ export default function Bookings() {
                   </span>
                   
                   {hasBookings && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div style={{ 
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
+                      <div className="desktop-only" style={{ 
                         fontSize: '0.65rem', 
                         fontWeight: 900, 
                         color: hasPending ? '#000' : 'var(--emerald-400)',
@@ -450,8 +457,15 @@ export default function Bookings() {
                         {dayBookings.length} {dayBookings.length === 1 ? 'Cita' : 'Citas'}
                       </div>
                       
+                      {/* Indicador móvil simplificado */}
+                      <div className="mobile-only" style={{
+                         width: '8px', height: '8px', borderRadius: '50%',
+                         backgroundColor: hasPending ? 'var(--tertiary)' : 'var(--emerald-400)',
+                         marginTop: '4px'
+                      }}></div>
+
                       {/* Avatar Row */}
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <div className="desktop-only" style={{ display: 'flex', alignItems: 'center', marginTop: '2px' }}>
                         {dayBookings.slice(0, 3).map((b, i) => (
                           <div key={b.id} style={{ 
                             width: '20px', height: '20px', borderRadius: '50%', 
@@ -484,6 +498,7 @@ export default function Bookings() {
                 </div>
               )
             })}
+          </div>
           </div>
         </div>
       )}

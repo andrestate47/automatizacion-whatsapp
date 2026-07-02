@@ -24,6 +24,40 @@ interface Message {
   media_type?: string;
 }
 
+const compressImage = (file: File, maxWidth = 1200): Promise<File> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return resolve(file);
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), { type: 'image/jpeg' }));
+          } else {
+            resolve(file);
+          }
+        }, 'image/jpeg', 0.75);
+      };
+      img.onerror = () => resolve(file);
+    };
+    reader.onerror = () => resolve(file);
+  });
+};
+
 const renderFormattedMessage = (text: string) => {
   if (!text) return '';
   const parts = text.split(/(\*[^*]+\*)/g);
@@ -222,11 +256,19 @@ export default function WhatsApp() {
     }
     
     const cleanName = fileName ? fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, '_') : 'file';
-    const filePath = `${activeChatId}/${Date.now()}_${cleanName}${fileExt}`;
+    let finalFileExt = fileExt;
+    let fileToUpload = file;
+
+    if (isImage) {
+      fileToUpload = await compressImage(file);
+      finalFileExt = '.jpg';
+    }
+
+    const filePath = `${activeChatId}/${Date.now()}_${cleanName}${finalFileExt}`;
     
     const { error } = await supabase.storage
       .from('chat_media')
-      .upload(filePath, file, { cacheControl: '3600', upsert: true });
+      .upload(filePath, fileToUpload, { cacheControl: '3600', upsert: true });
       
     if (error) {
       console.error("Error al subir archivo:", error);
@@ -292,11 +334,19 @@ export default function WhatsApp() {
             }
             
             const cleanName = fileName ? fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, '_') : 'clipboard';
-            const filePath = `${activeChatId}/${Date.now()}_${cleanName}${fileExt}`;
+            let finalFileExt = fileExt;
+            let fileToUpload = file;
+
+            if (isImage) {
+              fileToUpload = await compressImage(file);
+              finalFileExt = '.jpg';
+            }
+
+            const filePath = `${activeChatId}/${Date.now()}_${cleanName}${finalFileExt}`;
             
             const { error } = await supabase.storage
               .from('chat_media')
-              .upload(filePath, file, { cacheControl: '3600', upsert: true });
+              .upload(filePath, fileToUpload, { cacheControl: '3600', upsert: true });
               
             if (error) {
               console.error("Error al subir archivo pegado:", error);
@@ -341,6 +391,18 @@ export default function WhatsApp() {
       media_type: currentMedia?.type || null,
       status: 'sent'
     }]);
+
+    // Llama a la Edge Function para enviar el mensaje físicamente por Meta API
+    if (activeChat?.phone_number) {
+      supabase.functions.invoke('send-whatsapp-manual', {
+        body: {
+          phone: activeChat.phone_number,
+          message: outboundText,
+          mediaUrl: currentMedia?.url || null,
+          mediaType: currentMedia?.type || null,
+        }
+      }).catch(err => console.error("Error enviando mensaje vía API:", err));
+    }
   };
 
   const toggleHumanMode = async () => {
@@ -375,7 +437,7 @@ export default function WhatsApp() {
       <div className="chat-layout" style={{ display: 'flex', flex: 1, gap: '1.5rem', minHeight: 0, width: '100%' }}>
         
         {/* Columna Izquierda: Lista de Chats */}
-        <div style={{ display: 'flex', flexDirection: 'column', width: '380px', minWidth: '380px' }}>
+        <div className={`chat-sidebar-wrapper ${activeChatId ? 'chat-active' : 'chat-inactive'}`} style={{ display: 'flex', flexDirection: 'column', width: '380px', minWidth: '380px' }}>
           
           <div className="chat-sidebar" style={{ flex: 1, backgroundColor: 'var(--surface-container)', borderRadius: '12px', display: 'flex', flexDirection: 'column', border: '2px solid var(--outline-variant)', overflow: 'hidden' }}>
           <div style={{ padding: '1rem', borderBottom: '1px solid var(--surface-container-highest)', backgroundColor: '#10b981', color: '#ffffff', fontWeight: 600, display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -489,12 +551,15 @@ export default function WhatsApp() {
         </div>
 
         {/* Panel Derecho: Ventana del Chat Activo */}
-        <div style={{ flex: 1, backgroundColor: 'var(--surface-container-low)', borderRadius: '12px', display: 'flex', flexDirection: 'column', border: '1px solid var(--outline-variant)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+        <div className={`chat-main-window ${activeChatId ? 'chat-active' : 'chat-inactive'}`} style={{ flex: 1, backgroundColor: 'var(--surface-container-low)', borderRadius: '12px', display: 'flex', flexDirection: 'column', border: '1px solid var(--outline-variant)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
           {activeChatId ? (
             <>
               {/* Header del chat */}
               <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                   <button className="mobile-only icon-btn" onClick={() => setActiveChatId(null)} style={{ padding: '0.5rem', marginRight: '-0.5rem' }}>
+                      <span className="material-symbols-outlined">arrow_back</span>
+                   </button>
                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                       <span className="material-symbols-outlined" style={{color: '#10b981'}}>account_circle</span>
                    </div>
@@ -584,7 +649,7 @@ export default function WhatsApp() {
                           <video src={msg.media_url} controls style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: '8px', display: 'block', maxHeight: '280px', backgroundColor: '#000' }} />
                         )}
                         {msg.media_type === 'image' && msg.media_url && (
-                          <img src={msg.media_url} alt="Media" style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: '8px', display: 'block', maxHeight: '280px', objectFit: 'cover' }} />
+                          <img src={msg.media_url} alt="Media" loading="lazy" style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: '8px', display: 'block', maxHeight: '280px', objectFit: 'cover' }} />
                         )}
                         {msg.message_body && <div style={{wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>{renderFormattedMessage(msg.message_body)}</div>}
                         <div style={{fontSize: '0.65rem', textAlign: 'right', marginTop: '6px', opacity: 0.6, letterSpacing: '0.5px', color: '#ffffff'}}>

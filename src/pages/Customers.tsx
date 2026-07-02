@@ -94,29 +94,29 @@ export default function Customers() {
 
   return (
     <div className="p-8">
-      <header className="page-header">
+      <header className="page-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
         <div>
           <h2 className="page-title">Base de Clientes 👥</h2>
           <p className="body-md" style={{ color: 'var(--secondary)' }}>Gestiona y segmenta todos tus contactos en un solo lugar.</p>
         </div>
-        <div className="flex gap-4">
-          <div className="input-group" style={{ position: 'relative' }}>
+        <div className="flex gap-4" style={{ flexWrap: 'wrap', width: '100%' }}>
+          <div className="input-group" style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
              <span className="material-symbols-outlined" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }}>search</span>
              <input 
                type="text" 
                placeholder="Buscar cliente o lead..." 
                className="input-base" 
-               style={{ paddingLeft: '35px' }}
+                style={{ paddingLeft: '35px', width: '100%' }}
                value={searchTerm}
                onChange={e => setSearchTerm(e.target.value)}
              />
           </div>
-          <button className="btn-primary">Exportar CSV</button>
+          <button className="btn-primary" style={{ whiteSpace: 'nowrap' }}>Exportar CSV</button>
         </div>
       </header>
 
       {/* Tabs de Filtro */}
-      <div className="flex gap-4 mb-6" style={{ borderBottom: '1px solid var(--surface-container-highest)', paddingBottom: '1rem' }}>
+      <div className="flex gap-4 mb-6 hide-scrollbar" style={{ overflowX: 'auto', borderBottom: '1px solid var(--surface-container-highest)', paddingBottom: '1rem', WebkitOverflowScrolling: 'touch' }}>
         <button
           onClick={() => setActiveTab('customers')}
           style={{
@@ -128,7 +128,9 @@ export default function Customers() {
             backgroundColor: activeTab === 'customers' ? 'rgba(255, 90, 31, 0.1)' : 'transparent',
             transition: 'all 0.2s',
             border: 'none',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            flexShrink: 0,
+            whiteSpace: 'nowrap'
           }}
         >
           Clientes CRM (WhatsApp)
@@ -144,7 +146,9 @@ export default function Customers() {
             backgroundColor: activeTab === 'leads' ? 'rgba(255, 90, 31, 0.1)' : 'transparent',
             transition: 'all 0.2s',
             border: 'none',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            flexShrink: 0,
+            whiteSpace: 'nowrap'
           }}
         >
           Leads de la Landing (Pre-calificados)
@@ -153,7 +157,7 @@ export default function Customers() {
 
       {/* Segment Filters for CRM */}
       {activeTab === 'customers' && (
-        <div className="flex gap-2 mb-6" style={{ flexWrap: 'wrap' }}>
+        <div className="flex gap-2 mb-6" style={{ overflowX: 'auto', paddingBottom: '0.5rem', WebkitOverflowScrolling: 'touch' }}>
           {segments.map(seg => {
             const count = seg === 'Todos' ? customers.length : customers.filter(c => c.status === seg).length;
             const colors = getStatusColor(seg);
@@ -175,7 +179,9 @@ export default function Customers() {
                   backgroundColor: isActive ? colors.bg : 'transparent',
                   color: isActive ? colors.text : 'var(--secondary)',
                   cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  transition: 'all 0.2s',
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {seg}
@@ -194,8 +200,8 @@ export default function Customers() {
         </div>
       )}
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <div className="card table-container" style={{ padding: 0, overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
           {activeTab === 'customers' ? (
             <thead>
               <tr style={{ backgroundColor: 'var(--surface-container-low)', borderBottom: '1px solid var(--surface-container-highest)' }}>

@@ -286,7 +286,7 @@ INSERT INTO public.tenants (
   '1091076967420278',
 
   -- ✏️  CAMBIO 3: token permanente de WhatsApp
-  'EAAdRNS7bknMBRrKX7iH1uw6PvrYZC8YV19gvGHSmpBZBG50LWxbhXmgdgSQgwk8zGXZCMSmBLPalaJ9zZAy91nlSt5DqL6ZBRzpY1lFB09mURpzg9e0CCTZB0lC22pl24hX1JCxER8Ye9ZBS5zbehCFg3XbJNirRdkl1kH5ifLY4In87pxtC5U6JSXj4U4aeKdW4wZDZD',
+  'EAAdRNS7bknMBR8T7JBwaFkRp8LRfyZCubiRROG272VcuEHwUI0MaYy4ZBn80CeeABo0Mm7hr3Q2V418DD2VFizCFWx1yQj8ZAFjTioqEKLWVedlUgLu0AGhpFrSlKHRWkRym8kmpVhZAqUZAkReptYWoAf7lmnpae4FZBv5NaKnHLBlNi3RIvS9WCUS2yNK2fCzQZDZD',
 
   -- ✏️  CAMBIO 4: tu número de WhatsApp con código de país
   '+1234567890', -- Reemplaza esto con tu número real si lo deseas
