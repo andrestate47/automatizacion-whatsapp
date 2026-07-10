@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const webhookData = $('WhatsApp Webhook POST').item.json;\nconst body = webhookData.body || webhookData;\n\nlet is_valid_message = false;\nlet event_type = 'unknown';\nlet from = '';\nlet customer_name = null;\nlet message_id = null;\nlet type = 'unknown';\nlet text = '';\nlet media_id = null;\nlet timestamp = null;\nlet business_phone_number_id = null;\nlet display_phone_number = null;\nlet channel = 'unknown';\n\nif (body.event && body.event.includes('messages')) {\n  channel = 'evolution';\n  const dataPayload = body.data || body;\n  const msgObj = dataPayload.message || {};\n  \n  if (dataPayload.key && dataPayload.key.fromMe) return [{ json: { is_valid_message: false, reason: 'fromMe=true' } }];\n  \n  is_valid_message = true;\n  event_type = 'message';\n  from = (dataPayload.key?.remoteJid || '').split('@')[0]; \n  customer_name = dataPayload.pushName || null;\n  message_id = dataPayload.key?.id || null;\n  type = dataPayload.messageType === 'conversation' ? 'text' : dataPayload.messageType;\n  \n  if (msgObj.conversation) text = msgObj.conversation;\n  else if (msgObj.extendedTextMessage?.text) text = msgObj.extendedTextMessage.text;\n  \n  timestamp = dataPayload.messageTimestamp || Math.floor(Date.now() / 1000);\n  business_phone_number_id = webhookData.query?.meta_id || body.instance || 'evolution';\n  \n} else if (body.entry) {\n  channel = 'meta';\n  const value = body?.entry?.[0]?.changes?.[0]?.value || {};\n  const message = value?.messages?.[0] || null;\n  const contact = value?.contacts?.[0] || {};\n  const status = value?.statuses?.[0] || null;\n\n  if (status && !message) return [{ json: { is_valid_message: false, reason: 'WhatsApp status event ignored' } }];\n  if (!message) return [{ json: { is_valid_message: false, reason: 'No message object found' } }];\n\n  is_valid_message = true;\n  event_type = 'message';\n  from = message.from;\n  customer_name = contact?.profile?.name || null;\n  message_id = message.id;\n  type = message.type;\n  timestamp = message.timestamp;\n  business_phone_number_id = value?.metadata?.phone_number_id || null;\n  display_phone_number = value?.metadata?.display_phone_number || null;\n\n  if (type === 'text') text = message?.text?.body || '';\n  if (type === 'audio') media_id = message?.audio?.id || null;\n  if (type === 'image') { text = message?.image?.caption || ''; media_id = message?.image?.id || null; }\n  if (type === 'document') { text = message?.document?.caption || ''; media_id = message?.document?.id || null; }\n} else {\n  return [{ json: { is_valid_message: false, reason: 'Unknown payload format' } }];\n}\n\nreturn [{\n  json: {\n    is_valid_message, event_type, channel, from, customer_name, message_id,\n    message_type: type, text, media_id, timestamp, session_id: from,\n    business_phone_number_id, display_phone_number, raw_message: body\n  }\n}];"
+        "jsCode": "const webhookData = $('WhatsApp Webhook POST').item.json;\nconst body = webhookData.body || webhookData;\n\nlet is_valid_message = false;\nlet event_type = 'unknown';\nlet from = '';\nlet customer_name = null;\nlet message_id = null;\nlet type = 'unknown';\nlet text = '';\nlet media_id = null;\nlet timestamp = null;\nlet business_phone_number_id = null;\nlet display_phone_number = null;\nlet channel = 'unknown';\n\nif (body.event && body.event.includes('messages')) {\n  channel = 'evolution';\n  const dataPayload = body.data || body;\n  const msgObj = dataPayload.message || {};\n  \n  if (dataPayload.key && dataPayload.key.fromMe) return [{ json: { is_valid_message: false, reason: 'fromMe=true' } }];\n  \n  is_valid_message = true;\n  event_type = 'message';\n  from = (dataPayload.key?.remoteJid || '').split('@')[0]; \n  customer_name = dataPayload.pushName || null;\n  message_id = dataPayload.key?.id || null;\n  type = dataPayload.messageType === 'conversation' ? 'text' : dataPayload.messageType;\n  \n  if (msgObj.conversation) text = msgObj.conversation;\n  else if (msgObj.extendedTextMessage?.text) text = msgObj.extendedTextMessage.text;\n  \n  timestamp = dataPayload.messageTimestamp || Math.floor(Date.now() / 1000);\n  business_phone_number_id = webhookData.query?.meta_id || body.instance || 'evolution';\n\n} else if (body.entry) {\n  const value = body?.entry?.[0]?.changes?.[0]?.value || {};\n  const message = value?.messages?.[0] || body?.entry?.[0]?.messaging?.[0]?.message || null;\n  const contact = value?.contacts?.[0] || {};\n  const status = value?.statuses?.[0] || null;\n\n  if (body.object === 'instagram') {\n    channel = 'instagram';\n    const messagingEvent = body.entry[0].messaging?.[0];\n    if (messagingEvent && messagingEvent.message) {\n      if (messagingEvent.message.is_echo) return [{ json: { is_valid_message: false, reason: 'Instagram echo event ignored' } }];\n      \n      is_valid_message = true;\n      event_type = 'message';\n      from = messagingEvent.sender.id;\n      customer_name = 'Usuario Instagram';\n      message_id = messagingEvent.message.mid;\n      type = 'text';\n      timestamp = messagingEvent.timestamp;\n      business_phone_number_id = body.entry[0].id;\n      text = messagingEvent.message.text || '';\n    } else {\n       return [{ json: { is_valid_message: false, reason: 'Instagram webhook event ignored' } }];\n    }\n  } else {\n    channel = 'meta';\n    if (status && !message) return [{ json: { is_valid_message: false, reason: 'WhatsApp status event ignored' } }];\n    if (!message) return [{ json: { is_valid_message: false, reason: 'No message object found' } }];\n\n    is_valid_message = true;\n    event_type = 'message';\n    from = message.from;\n    customer_name = contact?.profile?.name || null;\n    message_id = message.id;\n    type = message.type;\n    timestamp = message.timestamp;\n    business_phone_number_id = value?.metadata?.phone_number_id || null;\n    display_phone_number = value?.metadata?.display_phone_number || null;\n\n    if (type === 'text') text = message?.text?.body || '';\n    if (type === 'audio') media_id = message?.audio?.id || null;\n    if (type === 'image') { text = message?.image?.caption || ''; media_id = message?.image?.id || null; }\n    if (type === 'document') { text = message?.document?.caption || ''; media_id = message?.document?.id || null; }\n  }\n} else {\n  return [{ json: { is_valid_message: false, reason: 'Unknown payload format' } }];\n}\n\nreturn [{\n  json: {\n    is_valid_message, event_type, channel, from, customer_name, message_id,\n    message_type: type, text, media_id, timestamp, session_id: from,\n    business_phone_number_id, display_phone_number, raw_message: body\n  }\n}];"
       },
       "id": "754703f6-ec81-4e69-a95d-c5acba68a060",
       "name": "Normalize WhatsApp Message",
@@ -36,7 +36,7 @@
         "conditions": {
           "boolean": [
             {
-              "value1": "={{$json.is_valid_message}}",
+              "value1": "={{$node['Normalize WhatsApp Message'].json.is_valid_message}}",
               "value2": true
             }
           ]
@@ -56,7 +56,7 @@
         "conditions": {
           "string": [
             {
-              "value1": "={{$json.message_type}}",
+              "value1": "={{$node['Normalize WhatsApp Message'].json.message_type}}",
               "value2": "text"
             }
           ]
@@ -189,13 +189,13 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/v21.0/{{$node['Normalize WhatsApp Message'].json.business_phone_number_id}}/messages",
+        "url": "=https://graph.facebook.com/v21.0/{{$node['Normalize WhatsApp Message'].json.channel === 'instagram' ? 'me' : $node['Normalize WhatsApp Message'].json.business_phone_number_id}}/messages",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "=Bearer {{$node['HTTP Request'].json.whatsapp_token}}"
+              "value": "=Bearer {{$node['Normalize WhatsApp Message'].json.channel === 'instagram' ? $node['HTTP Request'].json.instagram_token : $node['HTTP Request'].json.whatsapp_token}}"
             },
             {
               "name": "Content-Type",
@@ -205,7 +205,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{ $json.from }}\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": {{ JSON.stringify($json.reply) }}\n  }\n}",
+        "jsonBody": "={{\n  $node['Normalize WhatsApp Message'].json.channel === 'instagram' \n  ? { recipient: { id: $json.from }, message: { text: $json.reply } } \n  : { messaging_product: \"whatsapp\", to: $json.from, type: \"text\", text: { body: $json.reply } }\n}}",
         "options": {}
       },
       "id": "68a248ee-367f-44f9-85e4-83384221c69d",
@@ -386,7 +386,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_phone\": \"{{$node['Normalize WhatsApp Message'].json.from}}\",\n  \"p_message\": \"{{$node['Normalize WhatsApp Message'].json.text}}\",\n  \"p_direction\": \"inbound\",\n  \"p_customer_name\": \"{{$node['Normalize WhatsApp Message'].json.customer_name}}\",\n  \"p_tenant_id\": \"{{$node['HTTP Request'].json.id}}\"\n}",
+        "jsonBody": "={\n  \"p_phone\": \"{{$node['Normalize WhatsApp Message'].json.from}}\",\n  \"p_channel\": \"{{$node['Normalize WhatsApp Message'].json.channel}}\",\n  \"p_message\": \"{{$node['Normalize WhatsApp Message'].json.text}}\",\n  \"p_direction\": \"inbound\",\n  \"p_customer_name\": \"{{$node['Normalize WhatsApp Message'].json.customer_name}}\",\n  \"p_tenant_id\": \"{{$node['HTTP Request'].json.id}}\"\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -400,7 +400,7 @@
     },
     {
       "parameters": {
-        "url": "https://vijzjcpkypsmkhywndus.supabase.co/rest/v1/whatsapp_chats?phone_number=eq.{{ $json.from }}&select=is_bot_active",
+        "url": "https://vijzjcpkypsmkhywndus.supabase.co/rest/v1/whatsapp_chats?phone=eq.{{$node['Normalize WhatsApp Message'].json.from}}&select=is_bot_active",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -492,7 +492,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  \"p_phone\": $('Format WhatsApp Response').first().json.from,\n  \"p_message\": $('Format WhatsApp Response').first().json.reply,\n  \"p_direction\": \"outbound\",\n  \"p_customer_name\": $('Normalize WhatsApp Message').first().json.customer_name || null,\n  \"p_tenant_id\": $('HTTP Request').first().json.id\n}) }}",
+        "jsonBody": "={{ JSON.stringify({\n  \"p_phone\": $('Format WhatsApp Response').first().json.from,\n  \"p_message\": $('Format WhatsApp Response').first().json.reply,\n  \"p_direction\": \"outbound\",\n  \"p_customer_name\": $('Normalize WhatsApp Message').first().json.customer_name || null,\n  \"p_tenant_id\": $('HTTP Request').first().json.id,\n  \"p_channel\": $('Normalize WhatsApp Message').first().json.channel || 'whatsapp'\n}) }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -608,7 +608,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"p_phone_number_id\": \"{{ $json.body.entry[0].changes[0].value.metadata.phone_number_id }}\"\n}",
+        "jsonBody": "={\n  \"p_identifier\": \"{{ $json.business_phone_number_id }}\"\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -629,7 +629,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "=Bearer {{$node['HTTP Request'].json.whatsapp_token}}"
+              "value": "=Bearer {{$node['Normalize WhatsApp Message'].json.channel === 'instagram' ? $node['HTTP Request'].json.instagram_token : $node['HTTP Request'].json.whatsapp_token}}"
             },
             {
               "name": "Content-Type",
@@ -639,7 +639,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"{{$node['Normalize WhatsApp Message'].json.from}}\",\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"⚠️ Disculpa, en este momento estoy experimentando intermitencias técnicas y mi cerebro está reiniciándose. En breve un agente humano tomará tu caso.\"\n  }\n}",
+        "jsonBody": "={{\n  $node['Normalize WhatsApp Message'].json.channel === 'instagram' \n  ? { recipient: { id: $node['Normalize WhatsApp Message'].json.from }, message: { text: \"⚠️ Disculpa, en este momento estoy experimentando intermitencias técnicas y mi cerebro está reiniciándose. En breve un agente humano tomará tu caso.\" } } \n  : { messaging_product: \"whatsapp\", to: $node['Normalize WhatsApp Message'].json.from, type: \"text\", text: { body: \"⚠️ Disculpa, en este momento estoy experimentando intermitencias técnicas y mi cerebro está reiniciándose. En breve un agente humano tomará tu caso.\" } }\n}}",
         "options": {}
       },
       "id": "428f5c3e-5767-473f-97a8-b383a27130fa",
@@ -688,7 +688,7 @@
         "conditions": {
           "string": [
             {
-              "value1": "={{$json.message_type}}",
+              "value1": "={{$node['Normalize WhatsApp Message'].json.message_type}}",
               "value2": "interactive"
             }
           ]
@@ -920,7 +920,7 @@
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Normalize WhatsApp Message",
             "type": "main",
             "index": 0
           }
@@ -931,7 +931,7 @@
       "main": [
         [
           {
-            "node": "IF Valid Message",
+            "node": "HTTP Request",
             "type": "main",
             "index": 0
           }
@@ -1185,7 +1185,7 @@
       "main": [
         [
           {
-            "node": "Normalize WhatsApp Message",
+            "node": "IF Valid Message",
             "type": "main",
             "index": 0
           }
