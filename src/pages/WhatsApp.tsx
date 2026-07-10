@@ -11,6 +11,7 @@ interface Chat {
   is_bot_active: boolean;
   is_pinned?: boolean;
   is_discarded?: boolean;
+  channel?: string;
 }
 
 interface Message {
@@ -70,6 +71,7 @@ const renderFormattedMessage = (text: string) => {
 };
 
 export default function WhatsApp() {
+  const [activeTab, setActiveTab] = useState<'whatsapp' | 'instagram'>('whatsapp');
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -430,23 +432,67 @@ export default function WhatsApp() {
 
   return (
     <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 4.5rem)', overflow: 'hidden', padding: '0.5rem 1.5rem', boxSizing: 'border-box' }}>
-      <header style={{ marginBottom: '1rem' }}>
-        <h2 className="page-title" style={{ margin: 0 }}>Atención WhatsApp 📱</h2>
-      </header>
-
       <div className="chat-layout" style={{ display: 'flex', flex: 1, gap: '1.5rem', minHeight: 0, width: '100%' }}>
         
         {/* Columna Izquierda: Lista de Chats */}
         <div className={`chat-sidebar-wrapper ${activeChatId ? 'chat-active' : 'chat-inactive'}`} style={{ display: 'flex', flexDirection: 'column', width: '380px', minWidth: '380px' }}>
           
+          {/* Toggle de Canales */}
+          <div style={{ display: 'flex', gap: '0.25rem', backgroundColor: 'var(--surface-container)', padding: '0.25rem', borderRadius: '12px', border: '1px solid var(--outline-variant)', marginBottom: '0.5rem' }}>
+            <button
+              onClick={() => setActiveTab('whatsapp')}
+              style={{
+                flex: 1,
+                padding: '0.5rem',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                backgroundColor: activeTab === 'whatsapp' ? '#10b981' : 'transparent',
+                color: activeTab === 'whatsapp' ? '#ffffff' : 'var(--text-secondary)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>chat</span>
+              WhatsApp
+            </button>
+            <button
+              onClick={() => setActiveTab('instagram')}
+              style={{
+                flex: 1,
+                padding: '0.5rem',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                backgroundColor: activeTab === 'instagram' ? '#d946ef' : 'transparent',
+                color: activeTab === 'instagram' ? '#ffffff' : 'var(--text-secondary)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>photo_camera</span>
+              Instagram
+            </button>
+          </div>
+
           <div className="chat-sidebar" style={{ flex: 1, backgroundColor: 'var(--surface-container)', borderRadius: '12px', display: 'flex', flexDirection: 'column', border: '2px solid var(--outline-variant)', overflow: 'hidden' }}>
-          <div style={{ padding: '1rem', borderBottom: '1px solid var(--surface-container-highest)', backgroundColor: '#10b981', color: '#ffffff', fontWeight: 600, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ padding: '1rem', borderBottom: '1px solid var(--surface-container-highest)', backgroundColor: activeTab === 'whatsapp' ? '#10b981' : '#d946ef', color: '#ffffff', fontWeight: 600, display: 'flex', flexDirection: 'column', gap: '10px', transition: 'background-color 0.3s' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems:'center' }}>
-              <span className="material-symbols-outlined" style={{color: '#ffffff'}}>chat</span>
+              <span className="material-symbols-outlined" style={{color: '#ffffff'}}>{activeTab === 'whatsapp' ? 'chat' : 'photo_camera'}</span>
               Bandeja de Entrada
             </div>
             <div style={{ position: 'relative' }}>
-              <span className="material-symbols-outlined" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#10b981', fontSize: '1rem' }}>search</span>
+              <span className="material-symbols-outlined" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: activeTab === 'whatsapp' ? '#10b981' : '#d946ef', fontSize: '1rem', transition: 'color 0.3s' }}>search</span>
               <input 
                 type="text" 
                 placeholder="Buscar cliente..." 
@@ -457,95 +503,110 @@ export default function WhatsApp() {
             </div>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            {filteredChats.length === 0 ? (
-              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No hay chats</div>
-            ) : filteredChats.map(chat => {
-              const isHighlighted = chat.is_pinned;
-              const isDiscarded = chat.is_discarded;
-              return (
-              <div 
-                key={chat.id} 
-                onClick={() => setActiveChatId(chat.id)}
-                style={{ 
-                  padding: '1rem', 
-                  borderBottom: '1px solid var(--surface-container-highest)', 
-                  cursor: 'pointer',
-                  backgroundColor: activeChatId === chat.id ? 'rgba(74, 158, 255, 0.1)' : isDiscarded ? 'rgba(239, 68, 68, 0.05)' : isHighlighted ? 'rgba(245, 158, 11, 0.1)' : 'transparent',
-                  borderLeft: activeChatId === chat.id ? '3px solid var(--primary-color)' : isDiscarded ? '3px solid #ef4444' : isHighlighted ? '3px solid #f59e0b' : '3px solid transparent',
-                  transition: 'all 0.2s ease',
-                  position: 'relative',
-                  opacity: isDiscarded ? 0.7 : 1
-
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ display: 'flex', gap: '2px' }}>
-                      <button 
-                        onClick={(e) => toggleHighlight(e, chat.id, !!chat.is_pinned)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: isHighlighted ? '#f59e0b' : '#64748b',
-                          padding: '2px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.2s',
-                          outline: 'none'
-                        }}
-                        title={isHighlighted ? "Quitar resaltado" : "Resaltar chat importante"}
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: '18px', fontVariationSettings: isHighlighted ? "'FILL' 1" : "'FILL' 0" }}>star</span>
-                      </button>
-                      <button 
-                        onClick={(e) => toggleDiscard(e, chat.id, !!chat.is_discarded)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: isDiscarded ? '#ef4444' : '#94a3b8',
-                          padding: '2px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.2s',
-                          outline: 'none'
-                        }}
-                        title={isDiscarded ? "Restaurar cliente" : "Marcar como lead basura"}
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: '18px', fontVariationSettings: isDiscarded ? "'FILL' 1" : "'FILL' 0" }}>thumb_down</span>
-                      </button>
+            {(() => {
+              const activeChats = filteredChats.filter(c => activeTab === 'whatsapp' ? (!c.channel || c.channel === 'whatsapp') : (c.channel === 'instagram'));
+              
+              const renderChat = (chat: Chat) => {
+                const isHighlighted = chat.is_pinned;
+                const isDiscarded = chat.is_discarded;
+                const isIg = chat.channel === 'instagram';
+                
+                return (
+                <div 
+                  key={chat.id} 
+                  onClick={() => setActiveChatId(chat.id)}
+                  style={{ 
+                    padding: '1rem', 
+                    borderBottom: '1px solid var(--surface-container-highest)', 
+                    cursor: 'pointer',
+                    backgroundColor: activeChatId === chat.id ? (isIg ? 'rgba(217, 70, 239, 0.1)' : 'rgba(74, 158, 255, 0.1)') : isDiscarded ? 'rgba(239, 68, 68, 0.05)' : isHighlighted ? 'rgba(245, 158, 11, 0.1)' : 'transparent',
+                    borderLeft: activeChatId === chat.id ? (isIg ? '3px solid #d946ef' : '3px solid var(--primary-color)') : isDiscarded ? '3px solid #ef4444' : isHighlighted ? '3px solid #f59e0b' : '3px solid transparent',
+                    transition: 'all 0.2s ease',
+                    position: 'relative',
+                    opacity: isDiscarded ? 0.7 : 1
+  
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '2px' }}>
+                        <button 
+                          onClick={(e) => toggleHighlight(e, chat.id, !!chat.is_pinned)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: isHighlighted ? '#f59e0b' : '#64748b',
+                            padding: '2px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s',
+                            outline: 'none'
+                          }}
+                          title={isHighlighted ? "Quitar resaltado" : "Resaltar chat importante"}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '18px', fontVariationSettings: isHighlighted ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+                        </button>
+                        <button 
+                          onClick={(e) => toggleDiscard(e, chat.id, !!chat.is_discarded)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: isDiscarded ? '#ef4444' : '#94a3b8',
+                            padding: '2px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s',
+                            outline: 'none'
+                          }}
+                          title={isDiscarded ? "Restaurar cliente" : "Marcar como lead basura"}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '18px', fontVariationSettings: isDiscarded ? "'FILL' 1" : "'FILL' 0" }}>thumb_down</span>
+                        </button>
+                      </div>
+                      <div style={{ fontWeight: chat.unread_count > 0 ? 800 : 600, color: 'var(--text-primary)', textDecoration: isDiscarded ? 'line-through' : 'none' }}>{chat.contact_name}</div>
                     </div>
-                    <div style={{ fontWeight: chat.unread_count > 0 ? 800 : 600, color: 'var(--text-primary)', textDecoration: isDiscarded ? 'line-through' : 'none' }}>{chat.contact_name}</div>
+                    <div style={{ fontSize: '0.75rem', color: chat.unread_count > 0 ? (isIg ? '#d946ef' : 'var(--primary)') : 'var(--text-secondary)' }}>
+                      {new Date(chat.last_message_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: chat.unread_count > 0 ? 'var(--primary)' : 'var(--text-secondary)' }}>
-                    {new Date(chat.last_message_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: '0.8rem', color: chat.unread_count > 0 ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: chat.unread_count > 0 ? 600 : 400 }}>+{chat.phone_number}</div>
-                  <div style={{display: 'flex', gap: '6px', alignItems: 'center'}}>
-                    {chat.unread_count > 0 && (
-                      <span style={{ backgroundColor: 'var(--primary)', color: '#fff', fontSize: '0.65rem', fontWeight: 800, padding: '2px 8px', borderRadius: '12px' }}>
-                        {chat.unread_count}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '0.8rem', color: chat.unread_count > 0 ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: chat.unread_count > 0 ? 600 : 400 }}>{isIg ? '@' : '+'}{chat.phone_number}</div>
+                    <div style={{display: 'flex', gap: '6px', alignItems: 'center'}}>
+                      {chat.unread_count > 0 && (
+                        <span style={{ backgroundColor: isIg ? '#d946ef' : 'var(--primary)', color: '#fff', fontSize: '0.65rem', fontWeight: 800, padding: '2px 8px', borderRadius: '12px' }}>
+                          {chat.unread_count}
+                        </span>
+                      )}
+                      <span style={{ 
+                        fontSize: '0.6rem', 
+                        fontWeight: 800, 
+                        padding: '2px 6px', 
+                        borderRadius: '10px',
+                        backgroundColor: chat.is_bot_active ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                        color: chat.is_bot_active ? '#10b981' : '#ef4444'
+                      }}>
+                        {chat.is_bot_active ? 'BOT' : 'HUMANO'}
                       </span>
-                    )}
-                    <span style={{ 
-                      fontSize: '0.6rem', 
-                      fontWeight: 800, 
-                      padding: '2px 6px', 
-                      borderRadius: '10px',
-                      backgroundColor: chat.is_bot_active ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                      color: chat.is_bot_active ? '#10b981' : '#ef4444'
-                    }}>
-                      {chat.is_bot_active ? 'BOT' : 'HUMANO'}
-                    </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )})}
+                );
+              };
+
+              return (
+                <>
+                  {activeChats.length > 0 ? activeChats.map(renderChat) : (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                      No se encontraron chats de {activeTab === 'whatsapp' ? 'WhatsApp' : 'Instagram'}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </div>
         </div>
@@ -560,12 +621,12 @@ export default function WhatsApp() {
                    <button className="mobile-only icon-btn" onClick={() => setActiveChatId(null)} style={{ padding: '0.5rem', marginRight: '-0.5rem' }}>
                       <span className="material-symbols-outlined">arrow_back</span>
                    </button>
-                   <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                      <span className="material-symbols-outlined" style={{color: '#10b981'}}>account_circle</span>
+                   <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: activeChat?.channel === 'instagram' ? 'rgba(217, 70, 239, 0.2)' : 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                      <span className="material-symbols-outlined" style={{color: activeChat?.channel === 'instagram' ? '#d946ef' : '#10b981'}}>{activeChat?.channel === 'instagram' ? 'photo_camera' : 'account_circle'}</span>
                    </div>
                    <div>
-                      <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{chats.find(c => c.id === activeChatId)?.contact_name}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)'}}>Cliente Frecuente</div>
+                      <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{activeChat?.contact_name}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)'}}>{activeChat?.channel === 'instagram' ? 'Instagram Direct' : 'Cliente Frecuente'}</div>
                    </div>
                  </div>
                  
@@ -635,7 +696,7 @@ export default function WhatsApp() {
                       maxWidth: '85%',
                     }} className="chat-bubble-anim">
                       <div style={{
-                          backgroundColor: isInbound ? '#005c4b' : 'var(--primary)', 
+                          backgroundColor: isInbound ? (activeChat?.channel === 'instagram' ? '#6b21a8' : '#005c4b') : (activeChat?.channel === 'instagram' ? '#d946ef' : 'var(--primary)'), 
                           color: '#ffffff',
                           padding: '14px 18px',
                           borderRadius: '16px',
@@ -719,7 +780,7 @@ export default function WhatsApp() {
                 <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
                     <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', opacity: 0.5 }}>forum</span>
                 </div>
-                <h3>Central de <span style={{ color: '#25D366' }}>WhatsApp</span></h3>
+                <h3>Central de <span style={{ color: '#25D366' }}>WhatsApp</span> e <span style={{ background: 'linear-gradient(90deg, #833ab4, #fd1d1d, #fcb045)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Instagram</span></h3>
                 <p style={{ marginTop: '0.5rem', opacity: 0.6 }}>Selecciona un chat en la bandeja izquierda<br/>para empezar a responder.</p>
               </div>
             </div>
